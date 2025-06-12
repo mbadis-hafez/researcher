@@ -154,7 +154,7 @@
 
                             <div class="mb-6">
                                 <label class="form-label">{{__('Status')}}</label>
-                                <select name="status" class="select2 form-select">
+                                <select name="status" class="select2 form-select" required>
                                     <option value="">{{__('Select option')}}</option>
                                     <option value="1">{{__("Completed")}}</option>
                                     <option value="2">{{__('Pending')}}</option>

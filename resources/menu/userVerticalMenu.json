@@ -1,0 +1,20 @@
+{
+    "menu": [
+      {
+        "name": "My Profile",
+        "icon": "menu-icon tf-icons ti ti-user-check",
+        "url": "users/users/profile",
+        "slug": "Dashboard"
+      },
+      {
+        "menuHeader": "Apps & Pages"
+      },
+      {
+        "name": "Art Works",
+        "icon": "menu-icon tf-icons ti ti-presentation-analytics",
+        "slug": "users/users",
+        "url":"users/users"
+      }
+    ]
+  }
+  

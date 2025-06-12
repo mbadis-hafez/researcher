@@ -1,0 +1,42 @@
+{
+  "menu": [
+    {
+      "name": "Dashboards",
+      "icon": "menu-icon tf-icons ti ti-smart-home",
+      "slug": "dashboard",
+      "url": "users/researcher_board"
+    },
+    {
+      "menuHeader": "Apps & Pages"
+    },
+    {
+      "name": "Artists",
+      "icon": "menu-icon tf-icons ti ti-users",
+      "slug": "app-artist",
+      "submenu": [
+        {
+          "url": "app/artist/list",
+          "name": "List",
+          "slug": "app-artist-list"
+        }
+      ]
+    },
+    {
+      "name": "ArtWorks",
+      "icon": "menu-icon tf-icons ti ti-palette",
+      "slug": "app-artwork",
+      "submenu": [
+        {
+          "url": "app/artworks",
+          "name": "List",
+          "slug": "app-artworks-list"
+        },
+        {
+          "url": "app/artworks/create",
+          "name": "Create",
+          "slug": "app-artworks-create"
+        }
+      ]
+    }
+  ]
+}

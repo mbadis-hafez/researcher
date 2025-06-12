@@ -1,0 +1,27 @@
+{
+    "menu": [
+      {
+        "name": "My Profile",
+        "icon": "menu-icon tf-icons ti ti-user-check",
+        "url": "artist/profile-artist",
+        "slug": "Dashboard"
+      },
+      {
+        "menuHeader": "Apps & Pages"
+      },
+     
+      {
+        "name": "ArtWorks",
+        "icon": "menu-icon tf-icons ti ti-palette",
+        "slug": "app-artwork",
+        "url":"artist/profile-artworks"
+      },
+      {
+        "name": "Collections",
+        "icon": "menu-icon tf-icons ti ti-apps",
+        "slug": "app-artwork",
+        "url":"artist/profile-collections"
+      }
+    ]
+  }
+  

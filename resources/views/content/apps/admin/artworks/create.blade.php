@@ -159,6 +159,7 @@
                                     <option value="1">{{__("Completed")}}</option>
                                     <option value="2">{{__('Pending')}}</option>
                                     <option value="3">{{__('Doubtful')}}</option>
+                                    <option value="4">{{__('Incomplete')}}</option>
 
                                 </select>
                             </div>

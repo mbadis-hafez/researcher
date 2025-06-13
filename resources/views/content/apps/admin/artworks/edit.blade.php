@@ -108,25 +108,25 @@
                                     <label class="form-label">{{ __('Dimensions') }}*</label>
                                     <input type="text" class="form-control" name="dimensions"
                                         value="{{ old('dimensions', $artwork->dimensions) }}"
-                                        placeholder="{{ __('90 x 60 cm') }}" >
+                                        placeholder="{{ __('90 x 60 cm') }}">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">{{ __('Medium') }}*</label>
                                     <input type="text" class="form-control" name="medium"
-                                        value="{{ old('medium', $artwork->medium) }}" >
+                                        value="{{ old('medium', $artwork->medium) }}">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">{{ __('Year') }}*</label>
                                     <input type="number" class="form-control" name="year_created"
                                         value="{{ old('year_created', $artwork->year) }}" min="1000"
-                                        max="{{ date('Y') }}" >
+                                        max="{{ date('Y') }}">
                                 </div>
                             </div>
 
                             <div class="col-md-4">
                                 <label class="form-label">{{ __('Location') }} *</label>
                                 <input type="text" class="form-control" name="current_location"
-                                    value="{{ $artwork->current_location }}" >
+                                    value="{{ $artwork->current_location }}">
                             </div>
 
 
@@ -230,7 +230,8 @@
                                     </option>
                                     <option value="{{ $artwork->status == 3 ? 'selected' : '' }}">{{ __('Doubtful') }}
                                     </option>
-
+                                    <option value="{{ $artwork->status == 4 ? 'selected' : '' }}">{{ __('Incomplete') }}
+                                    </option>
                                 </select>
                             </div>
                             <div class="mt-4">

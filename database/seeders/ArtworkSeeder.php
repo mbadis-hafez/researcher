@@ -3,168 +3,61 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\User;
-use App\Models\Artist;
-use App\Models\ArtWork;
-use App\Models\Category;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use App\Models\Artwork;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Carbon;
 
 class ArtworkSeeder extends Seeder
 {
     public function run()
     {
-        // Path to your CSV file (store it in storage/app/imports/artworks.csv)
+        // Path to your CSV file
         $csvFile = database_path('seeders/data/artwork.csv');
-        
-        if (!file_exists($csvFile)) {
-            $this->command->error("CSV file not found at: {$csvFile}");
-            $this->command->info("Please create the file or check the path");
+
+        // Check if file exists
+        if (!File::exists($csvFile)) {
+            $this->command->error("The CSV file does not exist at path: {$csvFile}");
             return;
         }
 
-        // Create categories first
-        $categories = $this->initializeCategories();
+        // Read CSV file
+        $csvData = array_map('str_getcsv', file($csvFile));
 
-        // Open the CSV file
-        $file = fopen($csvFile, 'r');
-        
-        // Read header row
-        $header = fgetcsv($file);
-        
-        $statusMap = [
-            'Sold' => 3,
-            'Availble / For Sale' => 2,
-            'Not available' => 1,
-            'Not for sale' => 4,
-            'Details Pending' => 5
-        ];
+        // Remove header row if present
+        array_shift($csvData);
 
-        $count = 0;
-        
-        // Process each row
-        while (($row = fgetcsv($file)) !== false) {
-            $data = array_combine($header, $row);
-            
-            try {
-                $artist = $this->findOrCreateArtist($data);
-                $category = $this->determineCategory($data['Medium'], $categories);
-                $price = $this->parsePrice($data['Price in Atrgalleria']);
-                $status = $statusMap[$data['Status in Art Galleria']] ?? 1;
-                
-                ArtWork::create([
-                    'artist_id' => $artist->id,
-                    'category_id' => $category->id,
-                    'title' => $data['Artist Title'],
-                    'description' => $data['Comment'] ?? 'No description',
-                    'dimensions' => $data['Dimensions of artwork without frame'],
-                    'medium' => $data['Medium'],
-                    'year' => $data['Year'],
-                    'condition_report' => $data['Condition report'],
-                    'current_location' => $data['Current Location'],
-                    'price' => $price,
-                    'status' => $status,
-                    'is_active' => true,
-                    'image_path' => $this->downloadAndStoreImage($data['Link of photo']),
-                    'provenance' => $data['Provenance'] ?? '',
-                    'inventory_number' => $data['Inventory N. in Art Galleria'] ?? null,
-                    'signature' => $data['Signture'] ?? null,
-                    'edition' => $data['Edition'] ?? null,
-                ]);
-                
-                $count++;
-            } catch (\Exception $e) {
-                $this->command->error("Error importing row: " . $e->getMessage());
+        foreach ($csvData as $row) {
+            // Skip empty rows
+            if (empty($row)) {
+                continue;
             }
-        }
-        
-        fclose($file);
-        
-        $this->command->info("Successfully imported {$count} artworks");
-    }
+            // Map CSV fields to database columns
+            $artworkData = [
+                'id' => $row[0] ?? null,
+                'title' => isset($row[1]) && $row[1] !== 'N/A' ? $row[1] : null,
+                'year' => isset($row[2]) && $row[2] !== '0000' ? $row[2] : null,
+                'medium' => isset($row[3]) && $row[3] !== 'N/A' ? $row[3] : null,
+                'dimensions' => isset($row[4]) && $row[4] !== 'N/A' ? $row[4] : null,
+                'description' => isset($row[5]) && $row[5] !== 'N/A' ? $row[5] : null,
+                'additional_info' => isset($row[6]) && $row[6] !== 'N/A' ? $row[6] : null,
+                'provenance' => isset($row[7]) && $row[7] !== 'N/A' ? $row[7] : null,
+                'exhibition' => isset($row[8]) && ($row[8] !== 'N/A' || $row[8] == '') ? $row[8] : null,
+                'image_path' => isset($row[9]) ? json_encode([$row[9] !== 'N/A' ? $row[9] : null]) : null,
+                'current_location' => isset($row[10]) && $row[10] !== 'N/A' ? $row[10] : null,
+                'created_at' => isset($row[11]) && !empty($row[11]) ? Carbon::parse($row[11]) : now(),
+                'updated_at' => isset($row[12]) && !empty($row[12]) ? Carbon::parse($row[12]) : now(),
+                'artist_id'=>$row[19],
+                'author_id' => 15, // Hardcoded as requested
+                'source' => isset($row[16]) && $row[16] !== 'N/A' ? $row[16] : null,
+                'researcher_id' => 15, // Hardcoded as requested
+                'status' => 4, // Hardcoded as requested
+            ];
 
-    private function initializeCategories()
-    {
-        $categories = [
-            'ceramic tiles' => 'Ceramics & Glass',
-            'gouache on wood' => 'Painting',
-            'natural pigments and gouache on paper' => 'Drawing, Collage Or Other Work On Paper',
-            'acrylic and gouache on wooden planks' => 'Painting'
-        ];
-
-        $result = [];
-        foreach ($categories as $medium => $categoryName) {
-            $result[$medium] = Category::firstOrCreate([
-                'name' => $categoryName,
-            ]);
-        }
-
-        return $result;
-    }
-
-    private function findOrCreateArtist($data)
-    {
-        $artistName = trim($data['Artist Name']);
-        $artist = Artist::where('name', $artistName)->first();
-
-        if (!$artist) {
-            $username = Str::slug($artistName);
-            $email = null;
-            
-            $user = User::create([
-                'name' => $artistName,
-                'email' => $email,
-                'password' => Hash::make('password'),
-                'email_verified_at' => now(),
-            ]);
-
-            $artist = Artist::create([
-                'user_id' => $user->id,
-                'name' => $artistName,
-                'country' => $data['The Nationality'],
-            ]);
+            // Create or update the artwork
+            Artwork::updateOrCreate(['id' => $artworkData['id']], $artworkData);
         }
 
-        return $artist;
-    }
-
-    private function determineCategory($medium, $categories)
-    {
-        $medium = strtolower($medium);
-        
-        foreach ($categories as $key => $category) {
-            if (str_contains($medium, $key)) {
-                return $category;
-            }
-        }
-        
-        return Category::firstOrCreate([
-            'name' => 'Unclassified',
-        ]);
-    }
-
-    private function parsePrice($price)
-    {
-        return (float) preg_replace('/[^0-9.]/', '', $price);
-    }
-
-    private function downloadAndStoreImage($url)
-    {
-        try {
-            if (empty($url)) return null;
-            
-            $contents = @file_get_contents($url);
-            if ($contents === false) return null;
-            
-            $name = basename(parse_url($url, PHP_URL_PATH));
-            $path = 'artworks/' . uniqid() . '_' . $name;
-            
-            Storage::disk('public')->put($path, $contents);
-            
-            return $path;
-        } catch (\Exception $e) {
-            return null;
-        }
+        $this->command->info('Artworks seeded successfully!');
     }
 }

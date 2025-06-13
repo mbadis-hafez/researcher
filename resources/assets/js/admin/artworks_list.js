@@ -24,7 +24,9 @@ $(function () {
     statusObj = {
       1: { title: 'Details Pending', class: 'bg-label-secondary' },
       2: { title: 'Completed', class: 'bg-label-success' },
-      3: { title: 'Doubtful', class: 'bg-label-danger' }
+      3: { title: 'Doubtful', class: 'bg-label-danger' },
+      4: { title: 'Incomplete', class: 'bg-label-danger' }
+
     };
 
   // E-commerce Products datatable
@@ -40,8 +42,8 @@ $(function () {
         { data: 'medium' },
         { data: 'dimensions' },
         { data: 'year' },
-        { data: 'author_name'},
-        { data: 'researcher_name'},
+        { data: 'author_name' },
+        { data: 'researcher_name' },
         { data: 'status' },
         { data: '' }
       ],
@@ -105,9 +107,9 @@ $(function () {
             return $row_output;
           }
         },
-        
+
         {
-          target:2,
+          target: 2,
           render: function (data, type, full, meta) {
             var $medium = full['medium'];
 
@@ -159,7 +161,7 @@ $(function () {
             const editUrl = `/app/artworks/${full.id}/edit`;
             const viewUrl = `/admin/artworks/view/${full.id}`;
             const suspendUrl = `/app/admin/artworks/suspend/${full.id}`;
-            
+
             return (
               '<div class="d-flex align-items-sm-center justify-content-sm-center">' +
               `<a href="${editUrl}" class="btn btn-icon btn-text-secondary rounded-pill waves-effect waves-light"><i class="ti ti-edit"></i></a>` +
@@ -352,18 +354,18 @@ $(function () {
             var data = $.map(columns, function (col, i) {
               return col.title !== '' // ? Do not show row in modal popup if title is blank (for check box)
                 ? '<tr data-dt-row="' +
-                    col.rowIndex +
-                    '" data-dt-column="' +
-                    col.columnIndex +
-                    '">' +
-                    '<td>' +
-                    col.title +
-                    ':' +
-                    '</td> ' +
-                    '<td>' +
-                    col.data +
-                    '</td>' +
-                    '</tr>'
+                col.rowIndex +
+                '" data-dt-column="' +
+                col.columnIndex +
+                '">' +
+                '<td>' +
+                col.title +
+                ':' +
+                '</td> ' +
+                '<td>' +
+                col.data +
+                '</td>' +
+                '</tr>'
                 : '';
             }).join('');
 
@@ -395,7 +397,7 @@ $(function () {
               });
           });
         // Adding category filter once table initialized
-        
+
         // Adding stock filter once table initialized
         // this.api()
         //   .columns(4)

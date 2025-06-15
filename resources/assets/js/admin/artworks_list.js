@@ -34,6 +34,9 @@ $(function () {
   if (dt_product_table.length) {
     var dt_products = dt_product_table.DataTable({
       ajax: baseUrl + 'app/admin/artworks/getAll', // JSON file to add data
+      language: {
+        url: '//cdn.datatables.net/plug-ins/2.2.2/i18n/ar.json'
+    },
       columns: [
         // columns according to JSON
         { data: 'id' },

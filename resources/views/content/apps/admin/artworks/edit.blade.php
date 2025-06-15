@@ -132,7 +132,7 @@
 
                             <!-- Images -->
                             <div class="mb-6">
-                                <label class="form-label">Artwork Images</label>
+                                <label class="form-label">{{__('Artwork Images')}}</label>
                                 <!-- Current Images Gallery -->
                                 @if ($artwork->images && count(json_decode($artwork->images)))
                                     <div class="mb-4">
@@ -164,7 +164,7 @@
                                     </div>
                                 @else
                                     <div class="mb-4">
-                                        <h6 class="mb-3">Current Images</h6>
+                                        <h6 class="mb-3">{{__('Current Images')}}</h6>
                                         <div class="row g-3">
                                             @foreach (json_decode($artwork->image_path) as $index => $image)
                                                 <div class="col-6 col-sm-4 col-md-3 col-lg-2">
@@ -203,21 +203,21 @@
 
 
                             <div class="mb-6">
-                                <label class="form-label">Provenance</label>
+                                <label class="form-label">{{__('Provenance')}}</label>
                                 <textarea class="form-control" name="provenance" rows="2">{{ old('provenance', $artwork->provenance) }}</textarea>
                             </div>
 
                             <div class="mb-6">
-                                <label class="form-label">Exhibition</label>
+                                <label class="form-label">{{__('Exhibition')}}</label>
                                 <textarea class="form-control" name="exhibition" rows="2">{{ old('exhibition', $artwork->exhibition) }}</textarea>
                             </div>
                             <div class="mb-6">
-                                <label class="form-label">Additional Comments</label>
+                                <label class="form-label">{{__('Additional Comments')}}</label>
                                 <textarea class="form-control" name="comment" rows="3">{{ old('comment', $artwork->comment) }}</textarea>
                             </div>
 
                             <div class="mb-6">
-                                <label class="form-label">Source</label>
+                                <label class="form-label">{{__('Source')}}</label>
                                 <textarea class="form-control" name="source" rows="3">{{ old('source', $artwork->source) }}</textarea>
                             </div>
 

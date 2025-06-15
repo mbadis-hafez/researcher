@@ -47,7 +47,7 @@
                         <div class="card-body">
                             <div class="mb-6">
 
-                                <label class="form-label">{{__("Researcher")}}</label>
+                                <label class="form-label">{{__("Researcher Name")}}</label>
                                 <div class="input-group">
                                     <select class="form-select" name="researcher_id" id="researcher-select">
                                         <option value="">{{__('Select researcher')}}</option>
@@ -81,12 +81,12 @@
                             </div>
                             <!-- Artwork Details -->
                             <div class="mb-6">
-                                <label class="form-label">{{__('Title')}}</label>
+                                <label class="form-label">{{__('Artwork Title')}}</label>
                                 <input type="text" class="form-control" name="title">
                             </div>
 
                             <div class="mb-6">
-                                <label class="form-label">{{__('Artist*')}}</label>
+                                <label class="form-label">{{__('Artist Name')}}*</label>
                                 <select class="form-select" name="artist_id" required>
                                     <option value="">{{__('Select artist')}}</option>
                                     @foreach ($artists as $artist)

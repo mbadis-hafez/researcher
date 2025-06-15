@@ -172,48 +172,7 @@
                 </div>
                 <!-- /Second column -->
 
-                <!-- Second column -->
-                <div class="col-12 col-lg-4">
-
-                    <!-- Variants -->
-                    <div class="card mb-6">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">{{__('Additional Information')}}</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-repeater">
-                                <div data-repeater-list="group-a">
-                                    <div data-repeater-item>
-                                        <div class="row">
-                                            <div class="mb-6 col-4">
-                                                <label class="form-label">Options</label>
-                                                <select name="additions" class="select2 form-select">
-                                                    <option value="">{{__("Select option")}}</option>
-                                                    <option value="height">{{__('height')}}</option>
-                                                    <option value="framed">{{__('framed')}}</option>
-                                                    <option value="weight">{{__('weight')}}</option>
-                                                    <option value="width">{{__('width')}}</option>
-
-                                                </select>
-                                            </div>
-                                            <div class="mb-6 col-8">
-                                                <label class="form-label">{{__('Value')}}</label>
-                                                <input type="text" name="additions_value" class="form-control"
-                                                    placeholder="{{__('Enter value')}}">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button class="btn btn-primary" data-repeater-create type="button">
-                                    <i class='ti ti-plus ti-xs me-2'></i>
-                                   {{__('Add another option')}}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- /Variants -->
-                </div>
-                <!-- /Second column -->
+           
             </div>
         </form>
 

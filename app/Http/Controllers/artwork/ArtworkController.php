@@ -110,10 +110,16 @@ class ArtworkController extends Controller
       }
     }
    
+    $researcherData = [];
+    if ($request->researcher_id === 'other') {
+      $researcherData['researcher_name'] = $request->researcher_name;
+    } else {
+      $researcherData['researcher_id'] = $request->researcher_id;
+    }
 
     // Update the artwork
-    $artwork->update([
-       'title' => $request->title,
+    $artwork->update(array_merge([
+      'title' => $request->title,
       'dimensions' => $request->dimensions,
       'medium' => $request->medium,
       'year' => $request->year_created,
@@ -126,7 +132,7 @@ class ArtworkController extends Controller
       'exhibition' => $request->exhibition,
       'status' => $request->status,
       'author_id' => Auth::user()->id,
-    ]);
+    ], $researcherData));
 
     // Redirect with success message
     return redirect()->route('admin.artworks.index')

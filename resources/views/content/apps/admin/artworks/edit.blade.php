@@ -48,11 +48,12 @@
                             <!-- Artwork Details -->
                             <div class="mb-6">
                                 <label class="form-label">{{ __('Researcher Name') }}</label>
-                                <select class="form-select" name="researcher_name" id="researcher_select">
-                                    <option value="">{{ __('Other') }}</option>
+                                <select class="form-select" name="researcher_id" id="researcher_select">
+                                    <option value="">{{ __('Select researcher') }}</option>
+                                    <option value="other">{{ __('Other') }}</option>
                                     @foreach ($researchers as $researcher)
                                         <option value="{{ $researcher->id }}"
-                                            {{ old('researcher_name', $artwork->researcher_id) == $researcher->id ? 'selected' : '' }}>
+                                            {{ old('researcher_id', $artwork->researcher_id) == $researcher->id ? 'selected' : '' }}>
                                             {{ $researcher->name }}
                                         </option>
                                     @endforeach
@@ -61,27 +62,10 @@
 
                             <div class="mb-6" id="custom_researcher_container" style="display: none;">
                                 <label class="form-label">{{ __('Custom Researcher Name') }}</label>
-                                <input type="text" name="researcher_name" class="form-control"
-                                    value="{{ old('custom_researcher_name', $artwork->researcher_name && !in_array($artwork->researcher_name, $researchers->pluck('name')->toArray()) ? $artwork->researcher_name : '') }}">
+                                <input type="text" name="researcher_name" class="form-control" id="researcher_name_input"
+                                    value="{{ old('researcher_name', $artwork->researcher_name && !in_array($artwork->researcher_name, $researchers->pluck('name')->toArray()) ? $artwork->researcher_name : '') }}">
                             </div>
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    const select = document.getElementById('researcher_select');
-                                    const customInput = document.getElementById('custom_researcher_container');
 
-                                    function toggleCustomInput() {
-                                        const value = select.value;
-                                        if (!value) {
-                                            customInput.style.display = 'block';
-                                        } else {
-                                            customInput.style.display = 'none';
-                                        }
-                                    }
-
-                                    select.addEventListener('change', toggleCustomInput);
-                                    toggleCustomInput(); // initial check on page load
-                                });
-                            </script>
                             <div class="mb-6">
                                 <label class="form-label">{{ __('Title') }}*</label>
                                 <input type="text" class="form-control" name="title"
@@ -100,8 +84,6 @@
                                     @endforeach
                                 </select>
                             </div>
-
-
 
                             <div class="row mb-6">
                                 <div class="col-md-4">
@@ -128,7 +110,6 @@
                                 <input type="text" class="form-control" name="current_location"
                                     value="{{ $artwork->current_location }}">
                             </div>
-
 
                             <!-- Images -->
                             <div class="mb-6">
@@ -191,7 +172,6 @@
                                             @endforeach
                                         </div>
                                     </div>
-
                                 @endif
                                 <input type="file" class="form-control" name="images[]" multiple accept="image/*">
                                 <small class="text-muted">Or enter image URL:</small>
@@ -200,8 +180,6 @@
                             </div>
 
                             <!-- Additional Information -->
-
-
                             <div class="mb-6">
                                 <label class="form-label">{{__('Provenance')}}</label>
                                 <textarea class="form-control" name="provenance" rows="2">{{ old('provenance', $artwork->provenance) }}</textarea>
@@ -244,11 +222,33 @@
             </div>
         </form>
     </div>
-
-
 @endsection
+
 @section('scripts')
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const researcherSelect = document.getElementById('researcher_select');
+            const customResearcherContainer = document.getElementById('custom_researcher_container');
+            const researcherNameInput = document.getElementById('researcher_name_input');
+
+            // Initial check on page load
+            if (researcherSelect.value === 'other') {
+                customResearcherContainer.style.display = 'block';
+                researcherNameInput.required = true;
+            }
+
+            // Event listener for changes
+            researcherSelect.addEventListener('change', function() {
+                if (this.value === 'other') {
+                    customResearcherContainer.style.display = 'block';
+                    researcherNameInput.required = true;
+                } else {
+                    customResearcherContainer.style.display = 'none';
+                    researcherNameInput.required = false;
+                }
+            });
+        });
+
         function removeImage(button, imagePath) {
             if (confirm('Are you sure you want to remove this image?')) {
                 // Create hidden input to track removed images

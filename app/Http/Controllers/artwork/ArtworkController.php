@@ -53,27 +53,6 @@ class ArtworkController extends Controller
   {
     $artwork = ArtWork::find($id);
 
-    // Validate the request data
-    $validatedData = $request->validate([
-      'title' => 'required|string|max:255',
-      'dimensions' => 'required|string|max:100',
-      'medium' => 'required|string|max:100',
-      'year_created' => 'required|integer|min:1000|max:' . date('Y'),
-      'price' => 'required|numeric|min:0',
-      'status' => 'required|integer|in:1,2,3,4,5',
-      'image_url' => 'nullable|url',
-      'condition' => 'nullable|string|in:Excellent,Good,Fair,Poor',
-      'provenance' => 'nullable|string',
-      'comment' => 'nullable|string',
-      'additions' => 'nullable|array',
-      'additions_value' => 'nullable|array',
-      'condition_report' => 'nullable|string',
-      'removed_images' => 'nullable|array',
-      'current_location' => 'required|string|max:100',
-      'category_id' => 'required|exists:categories,id',
-
-    ]);
-
     // Handle image uploads
     $imagePaths = $artwork->images ? json_decode($artwork->images, true) : [];
 

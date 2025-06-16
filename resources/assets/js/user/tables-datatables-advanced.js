@@ -31,7 +31,7 @@ $(function () {
         { data: 'source' },
         { data: 'artist_name' },
         { data: 'year' },
-                { data: 'researcher_name' },
+        { data: 'researcher_name' },
 
         { data: '' }
       ],
@@ -155,17 +155,22 @@ $(function () {
         // Get the column index for "Artist Name"
         var artistNameColumnIndex = 5; // Adjust this index based on your table structure
 
-        // Get unique artist names and sort them
-        var artistNames = api
-          .column(artistNameColumnIndex)
-          .data()
-          .unique()
-          .sort();
+        // Get all artist names (not unique yet)
+        var allArtistNames = api.column(artistNameColumnIndex).data();
 
-        // Populate the select dropdown
+        // Create an object to count artworks per artist
+        var artistCounts = {};
+        allArtistNames.each(function (d) {
+          artistCounts[d] = (artistCounts[d] || 0) + 1;
+        });
+
+        // Get unique artist names and sort them
+        var artistNames = Object.keys(artistCounts).sort();
+
+        // Populate the select dropdown with count information
         var select = $('select.dt-input[data-column="' + artistNameColumnIndex + '"]');
-        artistNames.each(function (d) {
-          select.append('<option value="' + d + '">' + d + '</option>');
+        artistNames.forEach(function (artist) {
+          select.append('<option value="' + artist + '">' + artist + ' (' + artistCounts[artist] + ' artworks)</option>');
         });
 
         // Re-initialize Select2 to reflect the new options

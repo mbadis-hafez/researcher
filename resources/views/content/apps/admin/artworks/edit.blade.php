@@ -224,13 +224,12 @@
                             <div class="mb-6">
                                 <label class="form-label">{{ __('Status') }}</label>
                                 <select name="status" class="select2 form-select">
-                                    <option value="{{ $artwork->status == 1 ? 'selected' : '' }}">
-                                        {{ __('Completed') }}</option>
-                                    <option value="{{ $artwork->status == 2 ? 'selected' : '' }}">{{ __('Pending') }}
+                                    <option value="1"{{ $artwork->status == 1 ? 'selected' : '' }}>{{ __('Completed') }}</option>
+                                    <option value="2" {{ $artwork->status == 2 ? 'selected' : '' }}>{{ __('Pending') }}
                                     </option>
-                                    <option value="{{ $artwork->status == 3 ? 'selected' : '' }}">{{ __('Doubtful') }}
+                                    <option value="3" {{ $artwork->status == 3 ? 'selected' : '' }}>{{ __('Doubtful') }}
                                     </option>
-                                    <option value="{{ $artwork->status == 4 ? 'selected' : '' }}">{{ __('Incomplete') }}
+                                    <option value="4" {{ $artwork->status == 4 ? 'selected' : '' }}>{{ __('Incomplete') }}
                                     </option>
                                 </select>
                             </div>

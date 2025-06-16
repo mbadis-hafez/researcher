@@ -51,8 +51,10 @@ class ArtworkController extends Controller
 
   public function update(Request $request, $id)
   {
+
     $artwork = ArtWork::find($id);
 
+    $validatedData = $request->all();
     // Handle image uploads
     $imagePaths = $artwork->images ? json_decode($artwork->images, true) : [];
 
@@ -107,38 +109,23 @@ class ArtworkController extends Controller
         return back()->withErrors(["Failed to download image from URL: " . $e->getMessage()]);
       }
     }
-
-
-    // Process additional options
-    $additionalInfo = [];
-    if ($request->has('group-a')) {
-      foreach ($request->input('group-a') as $item) {
-        if (!empty($item['additions']) && isset($item['additions_value'])) {
-          $additionalInfo[] = [
-            'option' => $item['additions'],
-            'value' => $item['additions_value']
-          ];
-        }
-      }
-    }
+   
 
     // Update the artwork
     $artwork->update([
-      'title' => $validatedData['title'],
-      'dimensions' => $validatedData['dimensions'],
-      'medium' => $validatedData['medium'],
-      'year' => $validatedData['year_created'],
-      'price' => $validatedData['price'],
-      'category_id' => $validatedData['category_id'],
-      'status' => $validatedData['status'],
-      'condition' => $validatedData['condition'] ?? 'Good',
-      'provenance' => $validatedData['provenance'] ?? null,
-      'comment' => $validatedData['comment'] ?? null,
-      'images' => json_encode(array_values($imagePaths)), // Reindex array
-      'additional_info' => json_encode($additionalInfo),
-      'condition_report' => $validatedData['condition_report'] ?? null,
-      'current_location' => $validatedData['current_location'],
-
+       'title' => $request->title,
+      'dimensions' => $request->dimensions,
+      'medium' => $request->medium,
+      'year' => $request->year_created,
+      'status' => $request->status,
+      'provenance' => $request->provenance ?? null,
+      'comment' => $request->comment ?? null,
+      'artist_id' => $request->artist_id,
+      'current_location' => $request->current_location,
+      'source' => $request->source,
+      'exhibition' => $request->exhibition,
+      'status' => $request->status,
+      'author_id' => Auth::user()->id,
     ]);
 
     // Redirect with success message

@@ -22,10 +22,10 @@ $(function () {
   var dt_product_table = $('.datatables-products'),
     productAdd = baseUrl + 'app/artworks/create',
     statusObj = {
-      1: { title: 'Details Pending', class: 'bg-label-secondary' },
-      2: { title: 'Completed', class: 'bg-label-success' },
+      2: { title: 'Details Pending', class: 'bg-label-secondary' },
+      1: { title: 'Completed', class: 'bg-label-success' },
       3: { title: 'Doubtful', class: 'bg-label-danger' },
-      4: { title: 'Incomplete', class: 'bg-label-danger' }
+      4: { title: 'Incomplete', class: 'bg-label-warning' }
 
     };
 

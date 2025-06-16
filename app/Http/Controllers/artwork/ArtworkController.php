@@ -113,6 +113,8 @@ class ArtworkController extends Controller
     $researcherData = [];
     if ($request->researcher_id === 'other') {
       $researcherData['researcher_name'] = $request->researcher_name;
+            $researcherData['researcher_id'] = null;
+
     } else {
       $researcherData['researcher_id'] = $request->researcher_id;
     }

@@ -227,28 +227,31 @@
 @section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const researcherSelect = document.getElementById('researcher_select');
-            const customResearcherContainer = document.getElementById('custom_researcher_container');
-            const researcherNameInput = document.getElementById('researcher_name_input');
+    const researcherSelect = document.getElementById('researcher_select');
+    const customResearcherContainer = document.getElementById('custom_researcher_container');
+    const researcherNameInput = document.getElementById('researcher_name_input');
 
-            // Initial check on page load
-            if (researcherSelect.value === 'other') {
-                customResearcherContainer.style.display = 'block';
-                researcherNameInput.required = true;
-            }
+    // Initial check on page load
+    if (researcherSelect.value === 'other' || researcherSelect.value === '') {
+        customResearcherContainer.style.display = 'block';
+        researcherNameInput.required = true;
+        // If researcher_id is null in database, select "other" option
+        if (researcherSelect.value === '') {
+            researcherSelect.value = 'other';
+        }
+    }
 
-            // Event listener for changes
-            researcherSelect.addEventListener('change', function() {
-                if (this.value === 'other') {
-                    customResearcherContainer.style.display = 'block';
-                    researcherNameInput.required = true;
-                } else {
-                    customResearcherContainer.style.display = 'none';
-                    researcherNameInput.required = false;
-                }
-            });
-        });
-
+    // Event listener for changes
+    researcherSelect.addEventListener('change', function() {
+        if (this.value === 'other') {
+            customResearcherContainer.style.display = 'block';
+            researcherNameInput.required = true;
+        } else {
+            customResearcherContainer.style.display = 'none';
+            researcherNameInput.required = false;
+        }
+    });
+});
         function removeImage(button, imagePath) {
             if (confirm('Are you sure you want to remove this image?')) {
                 // Create hidden input to track removed images

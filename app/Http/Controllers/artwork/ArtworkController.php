@@ -51,18 +51,23 @@ class ArtworkController extends Controller
 
   public function update(Request $request, $id)
   {
+    $artwork = ArtWork::findOrFail($id);
 
-    $artwork = ArtWork::find($id);
+    // Initialize image paths from existing artwork
+    $imagePaths = $artwork->image_path ? json_decode($artwork->image_path, true) : [];
 
-    $validatedData = $request->all();
-    // Handle image uploads
-    $imagePaths = $artwork->images ? json_decode($artwork->images, true) : [];
+    // Ensure imagePaths is always an array
+    if (!is_array($imagePaths)) {
+      $imagePaths = [];
+    }
 
     // Remove deleted images
     if ($request->has('removed_images')) {
       foreach ($request->input('removed_images') as $removedImage) {
-        // Remove from storage
-        Storage::disk('public')->delete($removedImage);
+        // Remove from storage if the image exists
+        if (Storage::disk('public')->exists($removedImage)) {
+          Storage::disk('public')->delete($removedImage);
+        }
 
         // Remove from array
         $imagePaths = array_filter($imagePaths, function ($path) use ($removedImage) {
@@ -71,7 +76,7 @@ class ArtworkController extends Controller
       }
     }
 
-    // Add new images
+    // Add new uploaded images
     if ($request->hasFile('images')) {
       foreach ($request->file('images') as $index => $image) {
         if (!$image->isValid()) {
@@ -85,9 +90,10 @@ class ArtworkController extends Controller
           $path = $image->storeAs('artworks', $filename, 'public');
           $imagePaths[] = $path;
         } catch (\Exception $e) {
-          // Clean up any uploaded images if failure occurs
+          // Clean up any newly uploaded images if failure occurs
           foreach ($imagePaths as $uploadedPath) {
-            if (!in_array($uploadedPath, json_decode($artwork->images, true) ?? [])) {
+            $originalPaths = json_decode($artwork->images, true) ?? [];
+            if (!in_array($uploadedPath, $originalPaths)) {
               Storage::disk('public')->delete($uploadedPath);
             }
           }
@@ -101,20 +107,21 @@ class ArtworkController extends Controller
       try {
         $url = $request->input('image_url');
         $contents = file_get_contents($url);
-        $name = substr($url, strrpos($url, '/') + 1);
+        $name = basename(parse_url($url, PHP_URL_PATH));
         $filename = uniqid() . '_' . $name;
-        Storage::disk('public')->put('artworks/' . $filename, $contents);
-        $imagePaths[] = 'artworks/' . $filename;
+        $path = 'artworks/' . $filename;
+        Storage::disk('public')->put($path, $contents);
+        $imagePaths[] = $path;
       } catch (\Exception $e) {
         return back()->withErrors(["Failed to download image from URL: " . $e->getMessage()]);
       }
     }
-   
+
+    // Handle researcher data
     $researcherData = [];
     if ($request->researcher_id === 'other') {
       $researcherData['researcher_name'] = $request->researcher_name;
-            $researcherData['researcher_id'] = null;
-
+      $researcherData['researcher_id'] = null;
     } else {
       $researcherData['researcher_id'] = $request->researcher_id;
     }
@@ -132,14 +139,16 @@ class ArtworkController extends Controller
       'current_location' => $request->current_location,
       'source' => $request->source,
       'exhibition' => $request->exhibition,
+      'image_path' => json_encode(array_values($imagePaths)), // Ensure sequential array and encode
       'status' => $request->status,
-      'author_id' => Auth::user()->id,
+      'author_id' => Auth::id(),
     ], $researcherData));
 
-    // Redirect with success message
     return redirect()->route('admin.artworks.index')
       ->with('success', 'Artwork updated successfully!');
   }
+
+
   public function store(Request $request)
   {
     // Handle image uploads
@@ -226,7 +235,7 @@ class ArtworkController extends Controller
     $artists = Artist::all();
     $researchers = User::role('researcher')->get();
 
-    return  view('content.apps.admin.artworks.edit', compact('artwork', 'categories', 'artists','researchers'));
+    return  view('content.apps.admin.artworks.edit', compact('artwork', 'categories', 'artists', 'researchers'));
   }
 
   public function create()
@@ -240,7 +249,7 @@ class ArtworkController extends Controller
 
   public function getAll()
   {
-    $artworks = ArtWork::where('author_id',Auth::user()->id)->get();
+    $artworks = ArtWork::where('author_id', Auth::user()->id)->get();
 
     $data = [
       "data" => $artworks->map(function ($artwork) {
@@ -256,7 +265,7 @@ class ArtworkController extends Controller
           "image" => $artwork->display_image,
           "artwork_description" => $artwork->description ?? '',
           'author_name' => $artwork->user->name,
-          'researcher_name'=>$artwork->researcher ? $artwork->researcher->name : $artwork->researcher_name
+          'researcher_name' => $artwork->researcher ? $artwork->researcher->name : $artwork->researcher_name
         ];
       })->toArray()
     ];

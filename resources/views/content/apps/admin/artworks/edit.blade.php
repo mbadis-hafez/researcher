@@ -112,102 +112,105 @@
                             </div>
 
                             <!-- Images -->
+                            <!-- Images -->
                             <div class="mb-6">
-                                <label class="form-label">{{__('Artwork Images')}}</label>
+                                <label class="form-label">{{ __('Artwork Images') }}</label>
                                 <!-- Current Images Gallery -->
-                                @if ($artwork->images && count(json_decode($artwork->images)))
+                                @php
+                                    // Get images from either 'images' or 'image_path' field
+                                    $images = [];
+                                    if ($artwork->images) {
+                                        $images = json_decode($artwork->images, true);
+                                    } elseif ($artwork->image_path) {
+                                        $images = json_decode($artwork->image_path, true);
+                                    }
+
+                                    // Ensure $images is always an array
+                                    $images = is_array($images) ? $images : [];
+                                @endphp
+
+                                @if (count($images) > 0)
                                     <div class="mb-4">
-                                        <h6 class="mb-3">Current Images</h6>
+                                        <h6 class="mb-3">{{ __('Current Images') }}</h6>
                                         <div class="row g-3">
-                                            @foreach (json_decode($artwork->images) as $index => $image)
-                                                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                                                    <div class="card image-card h-100">
-                                                        <div class="card-img-top ratio ratio-1x1">
-                                                            <img src="{{ asset('storage/' . $image[$index]) }}"
-                                                                class="img-fluid object-fit-cover"
-                                                                alt="Artwork image {{ $index + 1 }}">
-                                                        </div>
-                                                        <div class="card-footer p-2 bg-light">
-                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                <small class="text-muted">Image {{ $index + 1 }}</small>
-                                                                <button type="button"
-                                                                    class="btn btn-sm btn-danger btn-icon rounded-circle"
-                                                                    onclick="removeImage(this, '{{ $image }}')"
-                                                                    data-bs-toggle="tooltip" title="Remove image">
-                                                                    <i class="ti ti-x"></i>
-                                                                </button>
+                                            @foreach ($images as $index => $image)
+                                                @if (is_string($image))
+                                                    {{-- Handle case where image might be nested --}}
+                                                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                                                        <div class="card image-card h-100">
+                                                            <div class="card-img-top ratio ratio-1x1">
+                                                                <img src="{{ asset('storage/' . $image) }}"
+                                                                    class="img-fluid object-fit-cover"
+                                                                    alt="Artwork image {{ $index + 1 }}"
+                                                                    onerror="this.onerror=null;this.src='{{ asset('assets/img/placeholder.jpg') }}';">
+                                                            </div>
+                                                            <div class="card-footer p-2 bg-light">
+                                                                <div
+                                                                    class="d-flex justify-content-between align-items-center">
+                                                                    <small class="text-muted">Image
+                                                                        {{ $index + 1 }}</small>
+                                                                    <button type="button"
+                                                                        class="btn btn-sm btn-danger btn-icon rounded-circle"
+                                                                        onclick="removeImage(this, '{{ $image }}')"
+                                                                        data-bs-toggle="tooltip" title="Remove image">
+                                                                        <i class="ti ti-x"></i>
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                @endif
                                             @endforeach
                                         </div>
                                     </div>
                                 @else
-                                    <div class="mb-4">
-                                        <h6 class="mb-3">{{__('Current Images')}}</h6>
-                                        <div class="row g-3">
-                                            @foreach (json_decode($artwork->image_path) as $index => $image)
-                                                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                                                    <div class="card image-card h-100">
-                                                        <div class="card-img-top ratio ratio-1x1">
-                                                            <img src="{{ asset('storage/' . $image) }}"
-                                                                class="img-fluid object-fit-cover"
-                                                                alt="Artwork image {{ $index + 1 }}">
-                                                        </div>
-                                                        <div class="card-footer p-2 bg-light">
-                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                <small class="text-muted">Image
-                                                                    {{ $index + 1 }}</small>
-                                                                <button type="button"
-                                                                    class="btn btn-sm btn-danger btn-icon rounded-circle"
-                                                                    onclick="removeImage(this, '{{ $image }}')"
-                                                                    data-bs-toggle="tooltip" title="Remove image">
-                                                                    <i class="ti ti-x"></i>
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
+                                    <div class="alert alert-info mb-4">
+                                        No images available for this artwork.
                                     </div>
                                 @endif
-                                <input type="file" class="form-control" name="images[]" multiple accept="image/*">
-                                <small class="text-muted">Or enter image URL:</small>
-                                <input type="url" class="form-control mt-2" name="image_url"
-                                    placeholder="https://..." value="{{ old('image_url') }}">
+
+                                <div class="mt-3">
+                                    <label class="form-label">{{ __('Add New Images') }}</label>
+                                    <input type="file" class="form-control" name="images[]" multiple accept="image/*">
+                                    <small class="text-muted d-block mt-2">Or enter image URL:</small>
+                                    <input type="url" class="form-control mt-1" name="image_url"
+                                        placeholder="https://..." value="{{ old('image_url') }}">
+                                </div>
                             </div>
 
                             <!-- Additional Information -->
                             <div class="mb-6">
-                                <label class="form-label">{{__('Provenance')}}</label>
+                                <label class="form-label">{{ __('Provenance') }}</label>
                                 <textarea class="form-control" name="provenance" rows="2">{{ old('provenance', $artwork->provenance) }}</textarea>
                             </div>
 
                             <div class="mb-6">
-                                <label class="form-label">{{__('Exhibition')}}</label>
+                                <label class="form-label">{{ __('Exhibition') }}</label>
                                 <textarea class="form-control" name="exhibition" rows="2">{{ old('exhibition', $artwork->exhibition) }}</textarea>
                             </div>
                             <div class="mb-6">
-                                <label class="form-label">{{__('Additional Comments')}}</label>
+                                <label class="form-label">{{ __('Additional Comments') }}</label>
                                 <textarea class="form-control" name="comment" rows="3">{{ old('comment', $artwork->comment) }}</textarea>
                             </div>
 
                             <div class="mb-6">
-                                <label class="form-label">{{__('Source')}}</label>
+                                <label class="form-label">{{ __('Source') }}</label>
                                 <textarea class="form-control" name="source" rows="3">{{ old('source', $artwork->source) }}</textarea>
                             </div>
 
                             <div class="mb-6">
                                 <label class="form-label">{{ __('Status') }}</label>
                                 <select name="status" class="select2 form-select">
-                                    <option value="1"{{ $artwork->status == 1 ? 'selected' : '' }}>{{ __('Completed') }}</option>
-                                    <option value="2" {{ $artwork->status == 2 ? 'selected' : '' }}>{{ __('Pending') }}
+                                    <option value="1"{{ $artwork->status == 1 ? 'selected' : '' }}>
+                                        {{ __('Completed') }}</option>
+                                    <option value="2" {{ $artwork->status == 2 ? 'selected' : '' }}>
+                                        {{ __('Pending') }}
                                     </option>
-                                    <option value="3" {{ $artwork->status == 3 ? 'selected' : '' }}>{{ __('Doubtful') }}
+                                    <option value="3" {{ $artwork->status == 3 ? 'selected' : '' }}>
+                                        {{ __('Doubtful') }}
                                     </option>
-                                    <option value="4" {{ $artwork->status == 4 ? 'selected' : '' }}>{{ __('Incomplete') }}
+                                    <option value="4" {{ $artwork->status == 4 ? 'selected' : '' }}>
+                                        {{ __('Incomplete') }}
                                     </option>
                                 </select>
                             </div>
@@ -227,31 +230,32 @@
 @section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-    const researcherSelect = document.getElementById('researcher_select');
-    const customResearcherContainer = document.getElementById('custom_researcher_container');
-    const researcherNameInput = document.getElementById('researcher_name_input');
+            const researcherSelect = document.getElementById('researcher_select');
+            const customResearcherContainer = document.getElementById('custom_researcher_container');
+            const researcherNameInput = document.getElementById('researcher_name_input');
 
-    // Initial check on page load
-    if (researcherSelect.value === 'other' || researcherSelect.value === '') {
-        customResearcherContainer.style.display = 'block';
-        researcherNameInput.required = true;
-        // If researcher_id is null in database, select "other" option
-        if (researcherSelect.value === '') {
-            researcherSelect.value = 'other';
-        }
-    }
+            // Initial check on page load
+            if (researcherSelect.value === 'other' || researcherSelect.value === '') {
+                customResearcherContainer.style.display = 'block';
+                researcherNameInput.required = true;
+                // If researcher_id is null in database, select "other" option
+                if (researcherSelect.value === '') {
+                    researcherSelect.value = 'other';
+                }
+            }
 
-    // Event listener for changes
-    researcherSelect.addEventListener('change', function() {
-        if (this.value === 'other') {
-            customResearcherContainer.style.display = 'block';
-            researcherNameInput.required = true;
-        } else {
-            customResearcherContainer.style.display = 'none';
-            researcherNameInput.required = false;
-        }
-    });
-});
+            // Event listener for changes
+            researcherSelect.addEventListener('change', function() {
+                if (this.value === 'other') {
+                    customResearcherContainer.style.display = 'block';
+                    researcherNameInput.required = true;
+                } else {
+                    customResearcherContainer.style.display = 'none';
+                    researcherNameInput.required = false;
+                }
+            });
+        });
+
         function removeImage(button, imagePath) {
             if (confirm('Are you sure you want to remove this image?')) {
                 // Create hidden input to track removed images

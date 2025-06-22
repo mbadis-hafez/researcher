@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str; // Also needed for the Str::slug() method
 
 class ArtworkController extends Controller
 {
@@ -51,18 +53,74 @@ class ArtworkController extends Controller
 
   public function update(Request $request, $id)
   {
+    // Validate request data
+    $validated = $request->validate([
+      'title' => 'required|string|max:255',
+      'dimensions' => 'nullable|string',
+      'medium' => 'nullable|string',
+      'year_created' => 'nullable|integer',
+      'status' => 'required|string',
+      'provenance' => 'nullable|string',
+      'comment' => 'nullable|string',
+      'artist_id' => 'required|exists:artists,id',
+      'current_location' => 'nullable|string',
+      'source' => 'nullable|string',
+      'exhibition' => 'nullable|string',
+      'remove_image' => 'nullable|boolean',
+      'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+      'researcher_id' => 'nullable',
+      'researcher_name' => 'nullable|required_if:researcher_id,other|string|max:255'
+    ]);
+
     $artwork = ArtWork::findOrFail($id);
 
-    // Initialize image path from existing artwork
+    // Authorization check (example using Laravel's policies)
+
+    DB::beginTransaction();
+    try {
+      // Handle image
+      $imagePath = $this->handleImageUpdate($request, $artwork);
+
+      // Handle researcher data
+      $researcherData = $this->handleResearcherData($request);
+
+      // Update the artwork
+      $artwork->update(array_merge([
+        'title' => $validated['title'],
+        'dimensions' => $validated['dimensions'],
+        'medium' => $validated['medium'],
+        'year' => $validated['year_created'],
+        'status' => $validated['status'],
+        'provenance' => $validated['provenance'] ?? null,
+        'comment' => $validated['comment'] ?? null,
+        'artist_id' => $validated['artist_id'],
+        'current_location' => $validated['current_location'],
+        'source' => $validated['source'],
+        'exhibition' => $validated['exhibition'],
+        'image_path' => $imagePath,
+        'author_id' => Auth::id(),
+      ], $researcherData));
+
+      DB::commit();
+
+      return redirect()->route('admin.artworks.index')
+        ->with('success', 'Artwork updated successfully!');
+    } catch (\Exception $e) {
+      DB::rollBack();
+      return back()->withErrors(['error' => 'Failed to update artwork: ' . $e->getMessage()]);
+    }
+  }
+
+  protected function handleImageUpdate(Request $request, ArtWork $artwork): ?string
+  {
     $imagePath = $artwork->image_path;
 
-    // Handle image removal if requested
-    if ($request->has('remove_image') && $request->input('remove_image') === '1') {
-      // Remove from storage if the image exists
+    // Handle image removal
+    if ($request->boolean('remove_image')) {
       if ($imagePath && Storage::disk('public')->exists($imagePath)) {
         Storage::disk('public')->delete($imagePath);
       }
-      $imagePath = null;
+      return null;
     }
 
     // Handle new image upload
@@ -70,53 +128,36 @@ class ArtworkController extends Controller
       $image = $request->file('image_path');
 
       if (!$image->isValid()) {
-        return back()->withErrors(["The uploaded image is not valid"]);
+        throw new \Exception("The uploaded image is not valid");
       }
 
-      try {
-        // Delete old image if it exists
-        if ($imagePath && Storage::disk('public')->exists($imagePath)) {
-          Storage::disk('public')->delete($imagePath);
-        }
-
-        // Generate a unique name for the new image
-        $filename = uniqid() . '_' . $image->getClientOriginalName();
-        // Store the image in the 'artworks' directory inside the 'public' disk
-        $imagePath = $image->storeAs('artworks', $filename, 'public');
-      } catch (\Exception $e) {
-        return back()->withErrors(["Failed to upload image: " . $e->getMessage()]);
+      // Delete old image if it exists
+      if ($imagePath && Storage::disk('public')->exists($imagePath)) {
+        Storage::disk('public')->delete($imagePath);
       }
+
+      // Generate a unique name for the new image
+      $filename = uniqid() . '_' . Str::slug(pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME));
+      $extension = $image->getClientOriginalExtension();
+      $filename = "{$filename}.{$extension}";
+
+      // Store the image
+      return $image->storeAs('artworks', $filename, 'public');
     }
 
-    // Handle researcher data
-    $researcherData = [];
+    return $imagePath;
+  }
+
+  protected function handleResearcherData(Request $request): array
+  {
     if ($request->researcher_id === 'other') {
-      $researcherData['researcher_name'] = $request->researcher_name;
-      $researcherData['researcher_id'] = null;
-    } else {
-      $researcherData['researcher_id'] = $request->researcher_id;
+      return [
+        'researcher_name' => $request->researcher_name,
+        'researcher_id' => null
+      ];
     }
 
-    // Update the artwork
-    $artwork->update(array_merge([
-      'title' => $request->title,
-      'dimensions' => $request->dimensions,
-      'medium' => $request->medium,
-      'year' => $request->year_created,
-      'status' => $request->status,
-      'provenance' => $request->provenance ?? null,
-      'comment' => $request->comment ?? null,
-      'artist_id' => $request->artist_id,
-      'current_location' => $request->current_location,
-      'source' => $request->source,
-      'exhibition' => $request->exhibition,
-      'image_path' => $imagePath, // Store single image path as string
-      'status' => $request->status,
-      'author_id' => Auth::id(),
-    ], $researcherData));
-
-    return redirect()->route('admin.artworks.index')
-      ->with('success', 'Artwork updated successfully!');
+    return ['researcher_id' => $request->researcher_id];
   }
 
   public function store(Request $request)

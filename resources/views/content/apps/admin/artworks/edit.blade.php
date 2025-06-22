@@ -87,18 +87,18 @@
 
                             <div class="row mb-6">
                                 <div class="col-md-4">
-                                    <label class="form-label">{{ __('Dimensions') }}*</label>
+                                    <label class="form-label">{{ __('Dimensions') }}</label>
                                     <input type="text" class="form-control" name="dimensions"
                                         value="{{ old('dimensions', $artwork->dimensions) }}"
                                         placeholder="{{ __('90 x 60 cm') }}">
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">{{ __('Medium') }}*</label>
+                                    <label class="form-label">{{ __('Medium') }}</label>
                                     <input type="text" class="form-control" name="medium"
                                         value="{{ old('medium', $artwork->medium) }}">
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">{{ __('Year') }}*</label>
+                                    <label class="form-label">{{ __('Year') }}</label>
                                     <input type="number" class="form-control" name="year_created"
                                         value="{{ old('year_created', $artwork->year) }}" min="1000"
                                         max="{{ date('Y') }}">
@@ -106,7 +106,7 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label">{{ __('Location') }} *</label>
+                                <label class="form-label">{{ __('Location') }} </label>
                                 <input type="text" class="form-control" name="current_location"
                                     value="{{ $artwork->current_location }}">
                             </div>
@@ -116,51 +116,33 @@
                             <div class="mb-6">
                                 <label class="form-label">{{ __('Artwork Images') }}</label>
                                 <!-- Current Images Gallery -->
-                                @php
-                                    // Get images from either 'images' or 'image_path' field
-                                    $images = [];
-                                    if ($artwork->images) {
-                                        $images = json_decode($artwork->images, true);
-                                    } elseif ($artwork->image_path) {
-                                        $images = json_decode($artwork->image_path, true);
-                                    }
 
-                                    // Ensure $images is always an array
-                                    $images = is_array($images) ? $images : [];
-                                @endphp
-
-                                @if (count($images) > 0)
+                                @if (!empty($artwork->image_path))
                                     <div class="mb-4">
                                         <h6 class="mb-3">{{ __('Current Images') }}</h6>
                                         <div class="row g-3">
-                                            @foreach ($images as $index => $image)
-                                                @if (is_string($image))
-                                                    {{-- Handle case where image might be nested --}}
-                                                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                                                        <div class="card image-card h-100">
-                                                            <div class="card-img-top ratio ratio-1x1">
-                                                                <img src="{{ asset('storage/' . $image) }}"
-                                                                    class="img-fluid object-fit-cover"
-                                                                    alt="Artwork image {{ $index + 1 }}"
-                                                                    onerror="this.onerror=null;this.src='{{ asset('assets/img/placeholder.jpg') }}';">
-                                                            </div>
-                                                            <div class="card-footer p-2 bg-light">
-                                                                <div
-                                                                    class="d-flex justify-content-between align-items-center">
-                                                                    <small class="text-muted">Image
-                                                                        {{ $index + 1 }}</small>
-                                                                    <button type="button"
-                                                                        class="btn btn-sm btn-danger btn-icon rounded-circle"
-                                                                        onclick="removeImage(this, '{{ $image }}')"
-                                                                        data-bs-toggle="tooltip" title="Remove image">
-                                                                        <i class="ti ti-x"></i>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
+                                            {{-- Handle case where image might be nested --}}
+                                            <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                                                <div class="card image-card h-100">
+                                                    <div class="card-img-top ratio ratio-1x1">
+                                                        <img src="{{ asset('storage/' . $artwork->image_path) }}"
+                                                            class="img-fluid object-fit-cover" alt="Artwork image "
+                                                            onerror="this.onerror=null;this.src='{{ asset('assets/img/placeholder.jpg') }}';">
+                                                    </div>
+                                                    <div class="card-footer p-2 bg-light">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <small class="text-muted">Image
+                                                            </small>
+                                                            <button type="button"
+                                                                class="btn btn-sm btn-danger btn-icon rounded-circle"
+                                                                onclick="removeImage(this, '{{ $artwork->image_path }}')"
+                                                                data-bs-toggle="tooltip" title="Remove image">
+                                                                <i class="ti ti-x"></i>
+                                                            </button>
                                                         </div>
                                                     </div>
-                                                @endif
-                                            @endforeach
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 @else
@@ -171,10 +153,7 @@
 
                                 <div class="mt-3">
                                     <label class="form-label">{{ __('Add New Images') }}</label>
-                                    <input type="file" class="form-control" name="images[]" multiple accept="image/*">
-                                    <small class="text-muted d-block mt-2">Or enter image URL:</small>
-                                    <input type="url" class="form-control mt-1" name="image_url"
-                                        placeholder="https://..." value="{{ old('image_url') }}">
+                                    <input type="file" class="form-control" name="image_path" accept="image/*">
                                 </div>
                             </div>
 

@@ -53,67 +53,38 @@ class ArtworkController extends Controller
   {
     $artwork = ArtWork::findOrFail($id);
 
-    // Initialize image paths from existing artwork
-    $imagePaths = $artwork->image_path ? json_decode($artwork->image_path, true) : [];
+    // Initialize image path from existing artwork
+    $imagePath = $artwork->image_path;
 
-    // Ensure imagePaths is always an array
-    if (!is_array($imagePaths)) {
-      $imagePaths = [];
-    }
-
-    // Remove deleted images
-    if ($request->has('removed_images')) {
-      foreach ($request->input('removed_images') as $removedImage) {
-        // Remove from storage if the image exists
-        if (Storage::disk('public')->exists($removedImage)) {
-          Storage::disk('public')->delete($removedImage);
-        }
-
-        // Remove from array
-        $imagePaths = array_filter($imagePaths, function ($path) use ($removedImage) {
-          return $path !== $removedImage;
-        });
+    // Handle image removal if requested
+    if ($request->has('remove_image') && $request->input('remove_image') === '1') {
+      // Remove from storage if the image exists
+      if ($imagePath && Storage::disk('public')->exists($imagePath)) {
+        Storage::disk('public')->delete($imagePath);
       }
+      $imagePath = null;
     }
 
-    // Add new uploaded images
-    if ($request->hasFile('images')) {
-      foreach ($request->file('images') as $index => $image) {
-        if (!$image->isValid()) {
-          return back()->withErrors(["Image #" . ($index + 1) . " is not valid"]);
-        }
+    // Handle new image upload
+    if ($request->hasFile('image_path')) {
+      $image = $request->file('image_path');
 
-        try {
-          // Generate a unique name for the image
-          $filename = uniqid() . '_' . $image->getClientOriginalName();
-          // Store the image in the 'artworks' directory inside the 'public' disk
-          $path = $image->storeAs('artworks', $filename, 'public');
-          $imagePaths[] = $path;
-        } catch (\Exception $e) {
-          // Clean up any newly uploaded images if failure occurs
-          foreach ($imagePaths as $uploadedPath) {
-            $originalPaths = json_decode($artwork->images, true) ?? [];
-            if (!in_array($uploadedPath, $originalPaths)) {
-              Storage::disk('public')->delete($uploadedPath);
-            }
-          }
-          return back()->withErrors(["Failed to upload image #" . ($index + 1) . ": " . $e->getMessage()]);
-        }
+      if (!$image->isValid()) {
+        return back()->withErrors(["The uploaded image is not valid"]);
       }
-    }
 
-    // Handle image URL if provided
-    if ($request->filled('image_url')) {
       try {
-        $url = $request->input('image_url');
-        $contents = file_get_contents($url);
-        $name = basename(parse_url($url, PHP_URL_PATH));
-        $filename = uniqid() . '_' . $name;
-        $path = 'artworks/' . $filename;
-        Storage::disk('public')->put($path, $contents);
-        $imagePaths[] = $path;
+        // Delete old image if it exists
+        if ($imagePath && Storage::disk('public')->exists($imagePath)) {
+          Storage::disk('public')->delete($imagePath);
+        }
+
+        // Generate a unique name for the new image
+        $filename = uniqid() . '_' . $image->getClientOriginalName();
+        // Store the image in the 'artworks' directory inside the 'public' disk
+        $imagePath = $image->storeAs('artworks', $filename, 'public');
       } catch (\Exception $e) {
-        return back()->withErrors(["Failed to download image from URL: " . $e->getMessage()]);
+        return back()->withErrors(["Failed to upload image: " . $e->getMessage()]);
       }
     }
 
@@ -139,7 +110,7 @@ class ArtworkController extends Controller
       'current_location' => $request->current_location,
       'source' => $request->source,
       'exhibition' => $request->exhibition,
-      'image_path' => json_encode(array_values($imagePaths)), // Ensure sequential array and encode
+      'image_path' => $imagePath, // Store single image path as string
       'status' => $request->status,
       'author_id' => Auth::id(),
     ], $researcherData));
@@ -148,31 +119,25 @@ class ArtworkController extends Controller
       ->with('success', 'Artwork updated successfully!');
   }
 
-
   public function store(Request $request)
   {
     // Handle image uploads
-    $imagePaths = [];
 
-    if ($request->hasFile('images')) {
-      foreach ($request->file('images') as $index => $image) {
-        if (!$image->isValid()) {
-          return back()->withErrors(["Image #" . ($index + 1) . " is not valid"]);
-        }
+    if ($request->hasFile('image_path')) {
+      $image = $request->image_path;
 
-        try {
-          // Generate a unique name for the image
-          $filename = uniqid() . '_' . $image->getClientOriginalName();
-          // Store the image in the 'artworks' directory inside the 'public' disk
-          $path = $image->storeAs('artworks', $filename, 'public');
-          $imagePaths[] = $path;
-        } catch (\Exception $e) {
-          // Clean up any uploaded images if failure occurs
-          foreach ($imagePaths as $uploadedPath) {
-            Storage::disk('public')->delete($uploadedPath);
-          }
-          return back()->withErrors(["Failed to upload image #" . ($index + 1) . ": " . $e->getMessage()]);
-        }
+      try {
+        // Generate a unique name for the image
+        $filename = uniqid() . '_' . $image->getClientOriginalName();
+        // Store the image in the 'artworks' directory inside the 'public' disk
+        $path = $image->storeAs('artworks', $filename, 'public');
+        $imagePaths = $path;
+      } catch (\Exception $e) {
+        // Clean up any uploaded images if failure occurs
+
+        Storage::disk('public')->delete($uploadedPath);
+
+        return back()->withErrors(["Failed to upload image " ?? $e->getMessage()]);
       }
     }
 
@@ -211,7 +176,7 @@ class ArtworkController extends Controller
       'status' => $request->status,
       'provenance' => $request->provenance ?? null,
       'comment' => $request->comment ?? null,
-      'image_path' => json_encode($imagePaths),
+      'image_path' => $imagePaths,
       'additional_info' => json_encode($additionalInfo),
       'artist_id' => $request->artist_id,
       'current_location' => $request->current_location,
@@ -225,7 +190,9 @@ class ArtworkController extends Controller
     return redirect()->route('admin.artworks.index')
       ->with('success', 'Artwork created successfully!');
   }
-  public function show($id) {}
+  public function show($id)
+  {
+  }
 
   public function edit($id)
   {
@@ -235,7 +202,7 @@ class ArtworkController extends Controller
     $artists = Artist::all();
     $researchers = User::role('researcher')->get();
 
-    return  view('content.apps.admin.artworks.edit', compact('artwork', 'categories', 'artists', 'researchers'));
+    return view('content.apps.admin.artworks.edit', compact('artwork', 'categories', 'artists', 'researchers'));
   }
 
   public function create()

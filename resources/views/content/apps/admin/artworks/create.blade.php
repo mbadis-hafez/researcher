@@ -124,10 +124,7 @@
                             <!-- Images -->
                             <div class="mb-6">
                                 <label class="form-label">{{__('Artwork Images*')}}</label>
-                                <input type="file" class="form-control" name="images[]" multiple accept="image/*"
-                                    required>
-                                <small class="text-muted">{{__('Or enter image URL:')}}</small>
-                                <input type="url" class="form-control mt-2" name="image_url" placeholder="https://...">
+                                <input type="file" class="form-control" name="image_path" accept="image/*" required>
                             </div>
 
                             <!-- Additional Information -->

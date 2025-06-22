@@ -53,7 +53,6 @@ class ArtworkController extends Controller
 
   public function update(Request $request, $id)
   {
-    // Validate request data
     $validated = $request->validate([
       'title' => 'required|string|max:255',
       'dimensions' => 'nullable|string',
@@ -74,15 +73,30 @@ class ArtworkController extends Controller
 
     $artwork = ArtWork::findOrFail($id);
 
-    // Authorization check (example using Laravel's policies)
+    // Add authorization check here if needed
+    // $this->authorize('update', $artwork);
 
     DB::beginTransaction();
     try {
-      // Handle image
-      $imagePath = $this->handleImageUpdate($request, $artwork);
+      $imagePath = $artwork->image_path;
 
-      // Handle researcher data
-      $researcherData = $this->handleResearcherData($request);
+      // Handle image removal
+      if ($request->remove_image && $imagePath) {
+        Storage::disk('public')->delete($imagePath);
+        $imagePath = null;
+      }
+
+      // Handle new image upload
+      if ($request->hasFile('image_path')) {
+        // Delete old image if exists
+        if ($imagePath) {
+          Storage::disk('public')->delete($imagePath);
+        }
+
+        $image = $request->image_path;
+        $filename = uniqid() . '_' . $image->getClientOriginalName();
+        $imagePath = $image->storeAs('artworks', $filename, 'public');
+      }
 
       // Update the artwork
       $artwork->update(array_merge([
@@ -99,7 +113,7 @@ class ArtworkController extends Controller
         'exhibition' => $validated['exhibition'],
         'image_path' => $imagePath,
         'author_id' => Auth::id(),
-      ], $researcherData));
+      ], $this->handleResearcherData($request)));
 
       DB::commit();
 
@@ -111,42 +125,25 @@ class ArtworkController extends Controller
     }
   }
 
-  protected function handleImageUpdate(Request $request, ArtWork $artwork): ?string
+  // Extract image upload to a separate method
+  protected function handleImageUpload(Request $request, $currentPath = null)
   {
-    $imagePath = $artwork->image_path;
-
-    // Handle image removal
-    if ($request->boolean('remove_image')) {
-      if ($imagePath && Storage::disk('public')->exists($imagePath)) {
-        Storage::disk('public')->delete($imagePath);
-      }
-      return null;
+    if (!$request->hasFile('image_path')) {
+      return $currentPath;
     }
 
-    // Handle new image upload
-    if ($request->hasFile('image_path')) {
-      $image = $request->file('image_path');
+    $image = $request->image_path;
+    $filename = uniqid() . '_' . $image->getClientOriginalName();
+    $path = $image->storeAs('artworks', $filename, 'public');
 
-      if (!$image->isValid()) {
-        throw new \Exception("The uploaded image is not valid");
-      }
-
-      // Delete old image if it exists
-      if ($imagePath && Storage::disk('public')->exists($imagePath)) {
-        Storage::disk('public')->delete($imagePath);
-      }
-
-      // Generate a unique name for the new image
-      $filename = uniqid() . '_' . Str::slug(pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME));
-      $extension = $image->getClientOriginalExtension();
-      $filename = "{$filename}.{$extension}";
-
-      // Store the image
-      return $image->storeAs('artworks', $filename, 'public');
+    // Delete old image if exists
+    if ($currentPath) {
+      Storage::disk('public')->delete($currentPath);
     }
 
-    return $imagePath;
+    return $path;
   }
+
 
   protected function handleResearcherData(Request $request): array
   {

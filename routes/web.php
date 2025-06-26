@@ -236,6 +236,8 @@ Route::middleware(['auth', 'language'])->group(function () {
    
     /** Artist routes **/
     Route::get('/app/artist/list', [ArtistController::class, 'index'])->name('app-artist-list');
+        Route::get('/app/artist/view/{id}', [ArtistController::class, 'view'])->name('app-artist-view');
+
     Route::get('/app/artist/create', [ArtistController::class, 'create'])->name('app-artist-create-with-bulk');
     Route::get('/app/artist/create-with-bulk', [ArtistController::class, 'createWithBulk'])->name('app-artist-create-with-bulk');
     Route::post('/app/artist/store', [ArtistController::class, 'store'])->name('app-artist-store');
@@ -300,6 +302,8 @@ Route::middleware(['auth', 'language'])->group(function () {
 
     ///////////////////////////////Starting official routes //////////////////////////////////////////////////////////////
     Route::get('app/admin/artworks/getAll', [ArtworkController::class, 'getAll'])->name(name: 'admin-artworks-data');
+        Route::get('app/admin/artworks/artist/{id}/getAll', [ArtworkController::class, 'artistGetAll'])->name(name: 'admin-artworks-data');
+
     Route::get('app/admin/artworks/suspend/{id}', action: [ArtworkController::class, 'destroy'])->name(name: 'artist-artworks-destroy');
 
     Route::resource('app/artworks', ArtworkController::class)->names([

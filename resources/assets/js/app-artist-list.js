@@ -21,7 +21,7 @@ $(function () {
   // Variable declaration for table
   var dt_user_table = $('.datatables-artists'),
     select2 = $('.select2'),
-    userView = baseUrl + 'app/user/view/account',
+    userView = (id) => baseUrl + 'app/artist/view/' + id,
     statusObj = {
       1: { title: 'Pending', class: 'bg-label-warning' },
       2: { title: 'Active', class: 'bg-label-success' },
@@ -101,10 +101,10 @@ $(function () {
               '</div>' +
               '</div>' +
               '<div class="d-flex flex-column">' +
-              '<a href="' +
-              userView +
-              '" class="text-heading text-truncate"><span class="fw-medium">' +
-              $name +
+               '<a href="' +
+      userView(full.id) +
+      '" class="text-heading text-truncate"><span class="fw-medium">' +
+      $name +
               
               '</div>' +
               '</div>';

@@ -10,6 +10,7 @@ use App\Http\Requests\Artist\UpdateArtistRequest;
 use App\Http\Resources\ArtistResource;
 use App\Models\Artist;
 use App\Models\ArtistImage;
+use App\Models\ArtWork;
 use App\Repositories\ArtistRepository;
 use App\Services\ArtistImportService;
 use App\Traits\FileManagerTrait;
@@ -28,6 +29,15 @@ class ArtistController extends Controller
     use FileManagerTrait;
 
     public function __construct(private ArtistRepository $artistRepository) {}
+
+
+    public function view($id)
+    {
+        
+        $artworks = ArtWork::where('artist_id',$id)->get();
+        return view('content.apps.artist.view',compact('artworks'));
+    }
+
 
     public function profile()
     {

@@ -16,7 +16,31 @@ use Illuminate\Support\Str; // Also needed for the Str::slug() method
 
 class ArtworkController extends Controller
 {
+  public function artistGetAll($id)
+  {
+    $artworks = ArtWork::where('artist_id', $id)->get();
 
+    $data = [
+      "data" => $artworks->map(function ($artwork) {
+        return [
+          "id" => $artwork->id,
+          "artwork_title" => $artwork->title, // Assuming 'title' is the field name
+          "category" => $artwork->category_id ?? 0, // Adjust based on your schema
+          "medium" => $artwork->medium ?? 'N/A', // Convert to binary status
+          "dimensions" => $artwork->dimensions ?? 'N/A', // Use SKU or fallback to ID
+          "price" => "SAR " . number_format($artwork->price, 2), // Format price
+          "year" => $artwork->year ?? "N/A",
+          "status" => $artwork->status, // Helper method for status
+          "image" => $artwork->display_image,
+          "artwork_description" => $artwork->description ?? '',
+          'author_name' => $artwork->user->name,
+          'researcher_name' => $artwork->researcher ? $artwork->researcher->name : $artwork->researcher_name
+        ];
+      })->toArray()
+    ];
+
+    return Response::json($data);
+  }
   public function view($id)
   {
     $artwork = Artwork::find($id);

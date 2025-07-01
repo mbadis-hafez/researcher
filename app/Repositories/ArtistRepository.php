@@ -17,11 +17,19 @@ class ArtistRepository implements ArtistRepositoryInterface
 
     public function __construct(
         private readonly Artist $artist,
-    ) {}
+    ) {
+    }
 
     public function getArtists()
     {
-        return Artist::all();
+        $artists = Artist::all();
+
+        // Eager load the count
+        $artists->each(function ($artist) {
+            $artist->artworks_count = $artist->artworks()->count();
+        });
+
+        return $artists;
     }
 
     public function getAllArtists()

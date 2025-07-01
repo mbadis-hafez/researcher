@@ -31,7 +31,6 @@
 
 @section('content')
 
-  
 
 
 <!-- Users List Table -->

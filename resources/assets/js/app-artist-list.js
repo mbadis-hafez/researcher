@@ -72,45 +72,29 @@ $(function () {
           searchable: false
         },
         {
-          // User full name and email
+          // Artist name and artwork count
           targets: 2,
           responsivePriority: 4,
           render: function (data, type, full, meta) {
             var $name = full['full_name'],
-              $image = full['avatar'];
-            if ($image) {
-              // For Avatar image
-              var $output =
-                '<img src="' + assetsPath + 'img/avatars/' + $image + '" alt="Avatar" class="rounded-circle">';
-            } else {
-              // For Avatar badge
-              var stateNum = Math.floor(Math.random() * 6);
-              var states = ['success', 'danger', 'warning', 'info', 'primary', 'secondary'];
-              var $state = states[stateNum],
-                $name = full['full_name'],
-                $initials = $name.match(/\b\w/g) || [];
-              $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
-              $output = '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
-            }
+              $artworkCount = full['artworks'] || 0; // Assuming artworks_count is a field in your data
+
+            // Create artwork count badge
+            var $artworkBadge = '<span class="badge bg-primary rounded-pill">' + $artworkCount + ' artworks</span>';
+
             // Creates full output for row
             var $row_output =
               '<div class="d-flex justify-content-start align-items-center user-name">' +
-              '<div class="avatar-wrapper">' +
-              '<div class="avatar avatar-sm me-4">' +
-              $output +
-              '</div>' +
+              '<div class="me-3">' + // Removed avatar wrapper and added margin
+              $artworkBadge +
               '</div>' +
               '<div class="d-flex flex-column">' +
-               '<a href="' +
-      userView(full.id) +
-      '" class="text-heading text-truncate"><span class="fw-medium">' +
-      $name +
-              
+              '<a href="' + userView(full.id) + '" class="text-heading text-truncate"><span class="fw-medium">' + $name + '</span></a>' +
               '</div>' +
               '</div>';
             return $row_output;
           }
-        },  
+        },
         {
           // Actions
           targets: -1,
@@ -308,12 +292,12 @@ $(function () {
           text: '<i class="ti ti-plus me-0 me-sm-1 ti-xs"></i><span class="d-none d-sm-inline-block">Add New Artist</span>',
           className: 'add-new btn btn-primary waves-effect waves-light',
           action: function (e, dt, node, config) {
-              window.location.href = '/app/artist/create';
+            window.location.href = '/app/artist/create';
           }
-      }
+        }
       ],
       // For responsive popup
-    
+
       initComplete: function () {
         // Adding role filter once table initialized
         // this.api()
@@ -380,10 +364,10 @@ $(function () {
               .each(function (d, j) {
                 select.append(
                   '<option value="' +
-                    statusObj[d].title +
-                    '" class="text-capitalize">' +
-                    statusObj[d].title +
-                    '</option>'
+                  statusObj[d].title +
+                  '" class="text-capitalize">' +
+                  statusObj[d].title +
+                  '</option>'
                 );
               });
           });
@@ -405,25 +389,25 @@ $(function () {
 });
 
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   // Delete confirmation
-  $(document).on('submit', '.delete-confirmation', function(e) {
-      e.preventDefault();
-      const form = this;
-      
-      Swal.fire({
-          title: 'Are you sure?',
-          text: "You won't be able to revert this!",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Yes, delete it!'
-      }).then((result) => {
-          if (result.isConfirmed) {
-              form.submit();
-          }
-      });
+  $(document).on('submit', '.delete-confirmation', function (e) {
+    e.preventDefault();
+    const form = this;
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        form.submit();
+      }
+    });
   });
 });
 

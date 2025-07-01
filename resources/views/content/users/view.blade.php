@@ -25,21 +25,14 @@
                 <div class="row g-0">
                     <!-- Artwork Frame Column -->
                     <div class="col-md-7">
-                        @php
-                            $imagePaths = json_decode($artwork->image_path, true);
-                            $mainImage = $imagePaths[0] ?? null;
-                        @endphp
-
-                        @if ($mainImage)
+                        
                             <div class="ornate-frame medium" id="artworkFrame">
                                 <div class="artwork-mat">
-                                    <img src="{{ asset('storage/' . $mainImage) }}" alt="{{ $artwork->title }}"
+                                    <img src="{{ asset('storage/' . $artwork->image_path) }}" alt="{{ $artwork->title }}"
                                         class="artwork-image">
                                 </div>
                             </div>
-                        @else
-                            <p>No image available</p>
-                        @endif
+                        
 
 
                         <!-- Size Selector -->

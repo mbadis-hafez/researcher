@@ -86,6 +86,7 @@
                         <th>{{ __('Artist Name') }}</th>
                         <th>{{ __('Year') }}</th>
                         <th>{{ __('Researcher Name') }}</th>
+                        <th>{{ __('Created By') }}</th>
 
                         <th>{{ __('Action') }}</th>
                     </tr>
@@ -100,6 +101,7 @@
                         <th>{{ __('Artist Name') }}</th>
                         <th>{{ __('Year') }}</th>
                         <th>{{ __('Researcher Name') }}</th>
+                        <th>{{ __('Created By') }}</th>
 
                         <th>{{ __('Action') }}</th>
                     </tr>

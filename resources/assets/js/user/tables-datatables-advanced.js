@@ -32,6 +32,7 @@ $(function () {
         { data: 'artist_name' },
         { data: 'year' },
         { data: 'researcher_name' },
+        { data: 'created_by' },
 
         { data: '' }
       ],

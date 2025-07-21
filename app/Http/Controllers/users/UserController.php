@@ -33,6 +33,7 @@ class UserController extends Controller
                 ->map(function ($artwork) {
                     return [
                         'id' => $artwork->id,
+                        'created_by' => $artwork->user->name ?? 'N/A',
                         'artwork_title' => mb_convert_encoding(Str::limit($artwork->title, 20, '...'), 'UTF-8', 'auto'),
                         'dimensions' => mb_convert_encoding($artwork->dimensions, 'UTF-8', 'auto'),
                         'medium' => mb_convert_encoding($artwork->medium ?? 'N/A', 'UTF-8', 'auto'),

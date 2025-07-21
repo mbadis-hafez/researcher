@@ -29,3 +29,6 @@ yarn-error.log
 
 yarn.lock
 package-lock.json
+
+#Ignore vscode AI rules
+.github/copilot-instructions.md
